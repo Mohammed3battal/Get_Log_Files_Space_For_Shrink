@@ -1,0 +1,28 @@
+CREATE TABLE #LogStats (
+    DatabaseName SYSNAME,
+    LogSizeMB DECIMAL(10,2),
+    LogUsedPercent DECIMAL(5,2),
+    Status INT  
+);
+
+
+
+INSERT INTO #LogStats
+EXEC('DBCC SQLPERF(LOGSPACE)');
+
+
+
+SELECT 
+    DatabaseName,
+    LogSizeMB,
+    CAST(LogSizeMB * LogUsedPercent / 100.0 AS DECIMAL(10,2)) AS UsedLogMB,
+    CAST(LogSizeMB * (1 - LogUsedPercent / 100.0) AS DECIMAL(10,2)) AS FreeLogMB,
+    CAST((1 - LogUsedPercent / 100.0) * 100.0 AS DECIMAL(5,2)) AS FreePercent
+FROM 
+    #LogStats
+ORDER BY 
+    FreeLogMB DESC;
+
+
+
+DROP TABLE #LogStats;
